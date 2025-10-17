@@ -1,7 +1,7 @@
 --[[
- Walk Speed Adjuster GUI (Fixed Version)
+ Walk Speed Adjuster GUI (Fixed + Minimize + Max Speed 500+)
  Works with Delta Executor
- Author: Kaezorath
+ Author: Janrez
 ]]
 
 -- Remove old GUI if re-executed
@@ -18,23 +18,113 @@ ScreenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 200, 0, 100)
-Frame.Position = UDim2.new(0.5, -100, 0.8, 0)
+Frame.Size = UDim2.new(0, 220, 0, 120)
+Frame.Position = UDim2.new(0.5, -110, 0.5, -60) -- Centered on screen
 Frame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Draggable = true
 Frame.Parent = ScreenGui
 
--- Title
+-- Title Bar
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, -30, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 Title.BorderSizePixel = 0
 Title.Text = "Walk Speed Adjuster"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 18
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Parent = Frame
+
+-- Minimize Button
+local Minimize = Instance.new("TextButton")
+Minimize.Size = UDim2.new(0, 30, 0, 30)
+Minimize.Position = UDim2.new(1, -30, 0, 0)
+Minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+Minimize.Text = "-"
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.Font = Enum.Font.SourceSansBold
+Minimize.TextSize = 22
+Minimize.Parent = Frame
+
+-- Container for content
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, 0, 1, -30)
+Content.Position = UDim2.new(0, 0, 0, 30)
+Content.BackgroundTransparency = 1
+Content.Parent = Frame
+
+-- Speed Input
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Size = UDim2.new(0, 200, 0, 30)
+SpeedBox.Position = UDim2.new(0, 10, 0, 10)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBox.PlaceholderText = "Enter speed (1 - 500+)"
+SpeedBox.Font = Enum.Font.SourceSans
+SpeedBox.TextSize = 18
+SpeedBox.Parent = Content
+
+-- Apply Button
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 200, 0, 30)
+Button.Position = UDim2.new(0, 10, 0, 50)
+Button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.Text = "Apply Speed"
+Button.Font = Enum.Font.SourceSansBold
+Button.TextSize = 18
+Button.Parent = Content
+
+-- Function to set speed
+local function SetSpeed(speed)
+	local player = game.Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = speed
+		task.spawn(function()
+			for i = 1, 20 do
+				if humanoid and humanoid.WalkSpeed ~= speed then
+					humanoid.WalkSpeed = speed
+				end
+				task.wait(0.2)
+			end
+		end)
+	end
+end
+
+-- Button logic
+Button.MouseButton1Click:Connect(function()
+	local inputSpeed = tonumber(SpeedBox.Text)
+	if inputSpeed and inputSpeed > 0 then
+		if inputSpeed > 500 then inputSpeed = 500 end
+		SetSpeed(inputSpeed)
+		Button.Text = "Speed Set: " .. inputSpeed
+	else
+		Button.Text = "Invalid Input!"
+	end
+	task.wait(1)
+	Button.Text = "Apply Speed"
+end)
+
+-- Minimize button logic
+local minimized = false
+Minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		Content.Visible = false
+		Frame.Size = UDim2.new(0, 220, 0, 30)
+		Minimize.Text = "+"
+	else
+		Content.Visible = true
+		Frame.Size = UDim2.new(0, 220, 0, 120)
+		Minimize.Text = "-"
+	end
+end)Title.TextSize = 18
 Title.Parent = Frame
 
 -- Speed Input
