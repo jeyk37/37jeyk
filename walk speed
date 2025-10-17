@@ -1,182 +1,89 @@
 --[[
- Walk Speed Adjuster GUI (Fixed + Minimize + Max Speed 500+)
- Works with Delta Executor
- Author: Janrez
+ Walk Speed Adjuster GUI (Compact Edition)
+ Made by: janrez
 ]]
 
--- Remove old GUI if re-executed
-pcall(function()
-    if game.CoreGui:FindFirstChild("WalkSpeedAdjuster") then
-        game.CoreGui.WalkSpeedAdjuster:Destroy()
-    end
+local player = game.Players.LocalPlayer
+local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+
+player.CharacterAdded:Connect(function(c)
+	humanoid = c:WaitForChild("Humanoid")
 end)
 
--- Create ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WalkSpeedAdjuster"
-ScreenGui.Parent = game:GetService("CoreGui")
+-- Create GUI
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
 
--- Main Frame
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 220, 0, 120)
-Frame.Position = UDim2.new(0.5, -110, 0.5, -60) -- Centered on screen
-Frame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-Frame.BorderSizePixel = 0
-Frame.Active = true
-Frame.Draggable = true
-Frame.Parent = ScreenGui
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 180, 0, 90)
+frame.Position = UDim2.new(0.5, -90, 0.5, -45)
+frame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+frame.Active = true
+frame.Draggable = true
+frame.BorderSizePixel = 0
+frame.Visible = true
 
--- Title Bar
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -30, 0, 30)
-Title.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-Title.BorderSizePixel = 0
-Title.Text = "Walk Speed Adjuster"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 18
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Parent = Frame
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -25, 0, 25)
+title.Position = UDim2.new(0, 5, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Walk Speed"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Font = Enum.Font.SourceSansBold
+title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Minimize Button
-local Minimize = Instance.new("TextButton")
-Minimize.Size = UDim2.new(0, 30, 0, 30)
-Minimize.Position = UDim2.new(1, -30, 0, 0)
-Minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-Minimize.Text = "-"
-Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
-Minimize.Font = Enum.Font.SourceSansBold
-Minimize.TextSize = 22
-Minimize.Parent = Frame
+local minimize = Instance.new("TextButton", frame)
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Position = UDim2.new(1, -25, 0, 0)
+minimize.Text = "-"
+minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimize.BorderSizePixel = 0
+minimize.Font = Enum.Font.SourceSansBold
+minimize.TextSize = 18
 
--- Container for content
-local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, 0, 1, -30)
-Content.Position = UDim2.new(0, 0, 0, 30)
-Content.BackgroundTransparency = 1
-Content.Parent = Frame
-
--- Speed Input
-local SpeedBox = Instance.new("TextBox")
-SpeedBox.Size = UDim2.new(0, 200, 0, 30)
-SpeedBox.Position = UDim2.new(0, 10, 0, 10)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.PlaceholderText = "Enter speed (1 - 500+)"
-SpeedBox.Font = Enum.Font.SourceSans
-SpeedBox.TextSize = 18
-SpeedBox.Parent = Content
+-- Input Box
+local speedBox = Instance.new("TextBox", frame)
+speedBox.Size = UDim2.new(1, -20, 0, 25)
+speedBox.Position = UDim2.new(0, 10, 0, 35)
+speedBox.PlaceholderText = "Speed (default 16)"
+speedBox.Text = "500"
+speedBox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.BorderSizePixel = 0
+speedBox.Font = Enum.Font.SourceSans
+speedBox.TextSize = 16
 
 -- Apply Button
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0, 200, 0, 30)
-Button.Position = UDim2.new(0, 10, 0, 50)
-Button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-Button.Text = "Apply Speed"
-Button.Font = Enum.Font.SourceSansBold
-Button.TextSize = 18
-Button.Parent = Content
+local apply = Instance.new("TextButton", frame)
+apply.Size = UDim2.new(1, -20, 0, 25)
+apply.Position = UDim2.new(0, 10, 0, 65)
+apply.Text = "Apply"
+apply.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+apply.TextColor3 = Color3.fromRGB(255, 255, 255)
+apply.BorderSizePixel = 0
+apply.Font = Enum.Font.SourceSansBold
+apply.TextSize = 16
 
--- Function to set speed
-local function SetSpeed(speed)
-	local player = game.Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if humanoid then
-		humanoid.WalkSpeed = speed
-		task.spawn(function()
-			for i = 1, 20 do
-				if humanoid and humanoid.WalkSpeed ~= speed then
-					humanoid.WalkSpeed = speed
-				end
-				task.wait(0.2)
-			end
-		end)
+-- Logic
+apply.MouseButton1Click:Connect(function()
+	if humanoid and tonumber(speedBox.Text) then
+		humanoid.WalkSpeed = tonumber(speedBox.Text)
 	end
-end
-
--- Button logic
-Button.MouseButton1Click:Connect(function()
-	local inputSpeed = tonumber(SpeedBox.Text)
-	if inputSpeed and inputSpeed > 0 then
-		if inputSpeed > 500 then inputSpeed = 500 end
-		SetSpeed(inputSpeed)
-		Button.Text = "Speed Set: " .. inputSpeed
-	else
-		Button.Text = "Invalid Input!"
-	end
-	task.wait(1)
-	Button.Text = "Apply Speed"
 end)
 
--- Minimize button logic
+-- Minimize toggle
 local minimized = false
-Minimize.MouseButton1Click:Connect(function()
+minimize.MouseButton1Click:Connect(function()
 	minimized = not minimized
-	if minimized then
-		Content.Visible = false
-		Frame.Size = UDim2.new(0, 220, 0, 30)
-		Minimize.Text = "+"
-	else
-		Content.Visible = true
-		Frame.Size = UDim2.new(0, 220, 0, 120)
-		Minimize.Text = "-"
+	for _, obj in ipairs(frame:GetChildren()) do
+		if obj ~= title and obj ~= minimize then
+			obj.Visible = not minimized
+		end
 	end
-end)Title.TextSize = 18
-Title.Parent = Frame
-
--- Speed Input
-local SpeedBox = Instance.new("TextBox")
-SpeedBox.Size = UDim2.new(0, 180, 0, 30)
-SpeedBox.Position = UDim2.new(0, 10, 0, 40)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.PlaceholderText = "Enter speed (e.g. 32)"
-SpeedBox.Font = Enum.Font.SourceSans
-SpeedBox.TextSize = 18
-SpeedBox.Parent = Frame
-
--- Apply Button
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0, 180, 0, 25)
-Button.Position = UDim2.new(0, 10, 0, 75)
-Button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-Button.Text = "Apply Speed"
-Button.Font = Enum.Font.SourceSansBold
-Button.TextSize = 18
-Button.Parent = Frame
-
--- Function to set speed properly
-local function SetSpeed(speed)
-	local player = game.Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if humanoid then
-		humanoid.WalkSpeed = speed
-		-- In case the game resets speed constantly, force update
-		task.spawn(function()
-			for i = 1, 20 do
-				if humanoid and humanoid.WalkSpeed ~= speed then
-					humanoid.WalkSpeed = speed
-				end
-				task.wait(0.2)
-			end
-		end)
-	end
-end
-
--- Button logic
-Button.MouseButton1Click:Connect(function()
-	local inputSpeed = tonumber(SpeedBox.Text)
-	if inputSpeed and inputSpeed > 0 then
-		SetSpeed(inputSpeed)
-		Button.Text = "Speed Set: " .. inputSpeed
-	else
-		Button.Text = "Invalid Input!"
-	end
-	task.wait(1)
-	Button.Text = "Apply Speed"
+	frame.Size = minimized and UDim2.new(0, 180, 0, 25) or UDim2.new(0, 180, 0, 90)
 end)
